@@ -186,13 +186,13 @@ try_it() {
   fi
 
   if [[ "$dir" != dots* ]]; then
-    dir="dots/vim/pack/eges/start/$dir"
+    dir="dots/vim/pack/ages/start/$dir"
   fi
 
   if [ ! -d "$dir" ]; then
     info "repository url is $url"
     info "install directory will be $dir"
-    cd dots/vim/pack/eges/start/
+    cd dots/vim/pack/ages/start/
     git clone --depth=1 https://github.com/majutsushi/tagbar.git
   else
     info "detected directory, clearing $dir"
@@ -219,7 +219,7 @@ install_it() {
   fi
 
   if [[ "$dir" != dots* ]]; then
-    dir="dots/vim/pack/eges/start/$dir"
+    dir="dots/vim/pack/ages/start/$dir"
   fi
 
   info "repository url is $url"
@@ -343,7 +343,7 @@ do
       ;;
 
     u|update)
-      for p in dots/vim/pack/eges/start/*;
+      for p in dots/vim/pack/ages/start/*;
       do
         pushd "$p" &> /dev/null
         info "updating $p..."
@@ -352,7 +352,7 @@ do
       done
 
       wait
-      info "done updating $(echo $(wc -w <<< "$(ls ./dots/vim/pack/eges/start/)")) packages"
+      info "done updating $(echo $(wc -w <<< "$(ls ./dots/vim/pack/ages/start/)")) packages"
       exit 0
 
       ;;
