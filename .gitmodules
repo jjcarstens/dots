@@ -1,0 +1,15 @@
+[submodule "dots/vim/pack/ages/start/ctrlp.vim"]
+	path = dots/vim/pack/ages/start/ctrlp.vim
+	url = https://github.com/kien/ctrlp.vim
+[submodule "dots/vim/pack/ages/start/nerdtree"]
+	path = dots/vim/pack/ages/start/nerdtree
+	url = https://github.com/scrooloose/nerdtree
+[submodule "dots/vim/pack/ages/start/vimgutter"]
+	path = dots/vim/pack/ages/start/vimgutter
+	url = https://github.com/airblade/vim-gitgutter
+[submodule "dots/vim/pack/ages/start/vim-ruby"]
+	path = dots/vim/pack/ages/start/vim-ruby
+	url = https://github.com/vim-ruby/vim-ruby.git
+[submodule "dots/vim/pack/ages/start/vim-elixir"]
+	path = dots/vim/pack/ages/start/vim-elixir
+	url = https://github.com/elixir-editors/vim-elixir

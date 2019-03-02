@@ -1,0 +1,3 @@
+set wildignore+=*/vendor/*
+let g:ruby_path='$HOME/.rvm/rubies/ruby-2.6.1/bin/ruby'
+syntax on
