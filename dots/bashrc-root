@@ -1,0 +1,16 @@
+# System-wide .bashrc file for interactive bash(1) shells.
+if [ -z "$PS1" ]; then
+   return
+fi
+
+if [ $(id -u) -eq 0 ];
+then # this is root and needs red
+PS1="\\[$(tput setab 4)$(tput bold)\]$myhost\[$(tput sgr0)\] \\[$(tput setaf 1)\\]\\u@📂 :\\w # \\[$(tput sgr0)\\]"
+else # normal
+PS1='\[$(tput setaf 6)\]\u@ 📂 \[$(tput setaf 4)\]{\W} $ \[$(tput sgr0)\]'
+fi
+
+# Make bash check its window size after a process completes
+shopt -s checkwinsize
+
+[ -r "/etc/bashrc_$TERM_PROGRAM" ] && . "/etc/bashrc_$TERM_PROGRAM"
