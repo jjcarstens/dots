@@ -18,6 +18,11 @@ test -s "$HOME/.kiex/scripts/kiex" && source "$HOME/.kiex/scripts/kiex"
 . $HOME/.asdf/asdf.sh
 . $HOME/.asdf/completions/asdf.bash
 
+##
+# Use gnu-sed as sed
+#
+PATH="/usr/local/opt/gnu-sed/libexec/gnubin:$PATH"
+
 # The next line updates PATH for the Google Cloud SDK.
 if [ -f '/Users/jonjon/repos/google-cloud-sdk/path.bash.inc' ]; then source '/Users/jonjon/repos/google-cloud-sdk/path.bash.inc'; fi
 
