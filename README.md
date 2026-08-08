@@ -67,3 +67,45 @@ separate **private** repo cloned to `~/.dots-private`, referenced directly by th
 
 `chezmoi diff` previews what an apply would change. Nothing secret is committed —
 secrets and app licenses are pulled from 1Password at apply-time.
+
+## Extending this setup
+
+As the setup grows, each kind of change has one obvious home:
+
+| I want to add…                          | Put it here                                                        |
+| --------------------------------------- | ----------------------------------------------------------------- |
+| A CLI / language runtime                | `private_dot_config/mise/config.toml` (mise-first)                |
+| A GUI app with an official cask         | `install/Brewfile`                                                |
+| An App Store app (opt-in)               | `install/mas.txt`                                                 |
+| An app with no cask/download            | `install/manual-apps.md`                                          |
+| A new dotfile                           | `chezmoi add ~/.thing` (becomes `dot_thing`)                      |
+| A machine-specific value in a dotfile   | make it a `.tmpl`, read from `.chezmoi` data                      |
+| A secret or paid-app license            | store in 1Password, reference via `onepasswordRead` / a template  |
+| A work/client git identity              | add a `[[data.work]]` block to `~/.config/chezmoi/chezmoi.toml`   |
+| A macOS system tweak                    | `run_onchange_darwin-macos-defaults.sh.tmpl`                      |
+| A **sensitive** shell func / SSH host   | the private `~/.dots-private` repo (`zshrc.local` / `ssh/config.local`) |
+| Something Linux- or macOS-only          | guard it with `{{ if eq .chezmoi.os "…" }}` in a `.tmpl`          |
+
+After any change: `dots sync`. On another machine: `dots update`.
+
+## Bootstrap flow
+
+```mermaid
+flowchart TD
+    A[curl bootstrap.sh] --> B[Install mise natively]
+    B --> C[mise installs chezmoi + 1Password CLI]
+    C --> D{op signed in?}
+    D -- no --> D1[Warn: secrets skipped]
+    D -- yes --> E
+    D1 --> E[chezmoi init --apply: dotfiles, mise config, macOS defaults]
+    E --> F[Clone private overlays → ~/.dots-private]
+    F --> G[mise install: runtimes + CLIs]
+    G --> H{macOS?}
+    H -- no, Linux --> Z[Done — minimal subset]
+    H -- yes --> I[Homebrew: base GUI casks + build deps]
+    I --> J[apply-licenses.sh: Alfred auto, Rocket/Dash prompt]
+    J --> K[Interactive review: App Store / manual apps, default skip]
+    K --> L[Sign into VS Code → enable Settings Sync]
+    L --> Z2[Done]
+```
+

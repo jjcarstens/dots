@@ -78,21 +78,22 @@ if [ "$OS" = "Darwin" ]; then
       [ -x "$p" ] && eval "$("$p" shellenv)" && break
     done
   fi
-  BREWFILE="$("$MISE" exec -- chezmoi source-path)/install/Brewfile"
-  if have brew && [ -f "$BREWFILE" ]; then
+
+  SRC="$("$MISE" exec -- chezmoi source-path)"   # chezmoi source dir (holds install/)
+
+  if have brew && [ -f "$SRC/install/Brewfile" ]; then
     log "Installing base apps via Homebrew"
-    brew bundle --file "$BREWFILE"
+    brew bundle --file "$SRC/install/Brewfile"
   fi
 
   # --- Apply paid-app licenses from 1Password (apps now installed) -----------
-  SRC="$("$MISE" exec -- chezmoi source-path)"
   if [ -f "$SRC/install/apply-licenses.sh" ]; then
     log "Applying app licenses from 1Password"
     sh "$SRC/install/apply-licenses.sh" || true
   fi
 
   # --- 6. interactive review: optional apps (default skip) -------------------
-  MAS="$("$MISE" exec -- chezmoi source-path)/install/mas.txt"
+  MAS="$SRC/install/mas.txt"
   if [ -f "$MAS" ] && have mas; then
     log "Optional Mac App Store apps (default: skip)"
     while IFS= read -r line; do
