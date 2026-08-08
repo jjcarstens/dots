@@ -43,13 +43,26 @@ log "Installing chezmoi + 1Password CLI via mise"
 "$MISE" use -g chezmoi@latest 1password-cli@latest
 
 log "Checking 1Password CLI sign-in"
-if [ -z "$("$MISE" exec -- op account list 2>/dev/null)" ]; then
+op_ready() { [ -n "$("$MISE" exec -- op account list 2>/dev/null)" ]; }
+if ! op_ready; then
   cat <<'EOF'
-    1Password CLI is not available. Open the 1Password app, enable
-    Settings > Developer > "Integrate with 1Password CLI", then re-run this
-    script (or the git signing key / licenses won't resolve).
+    1Password CLI isn't available yet. In the 1Password app, enable
+    Settings > Developer > "Integrate with 1Password CLI" and unlock it
+    (needed for the git signing key + app licenses).
 EOF
-  ask "Continue anyway (chezmoi apply will fail if it needs a secret)?" || exit 1
+  while ! op_ready; do
+    printf '    [w]ait & recheck, [c]ontinue without secrets, [a]bort? [w/c/a] '
+    if [ ! -t 0 ]; then reply=a; echo "a (non-interactive)"; else read -r reply </dev/tty || reply=a; fi
+    case "$reply" in
+      c|C) export DOTS_SKIP_SECRETS=1
+           echo "    Continuing without secrets — signing key + licenses skipped."
+           echo "    Re-run this script once 1Password is set up to fill them in."
+           break ;;
+      a|A) exit 1 ;;
+      *)   sleep 3 ;;
+    esac
+  done
+  op_ready && log "1Password CLI now available"
 fi
 
 # --- 3. chezmoi init --apply -------------------------------------------------

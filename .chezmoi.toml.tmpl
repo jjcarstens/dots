@@ -1,12 +1,18 @@
 {{- $name := promptStringOnce . "name" "Full name for git" -}}
 {{- $email := promptStringOnce . "email" "Personal git email (used for OSS / default)" -}}
+{{- /* Skip the 1Password read when bootstrap is running without CLI integration. */ -}}
+{{- $signingKey := "" -}}
+{{- if not (env "DOTS_SKIP_SECRETS") -}}
+{{-   $signingKey = onepasswordRead "op://Private/GitHub - calculon/public key" "my.1password.com" -}}
+{{- end -}}
 
 [data]
     name = {{ $name | quote }}
     email = {{ $email | quote }}
     # SSH signing PUBLIC key — the ONE place defining which key is used.
     # Pulled from 1Password (personal account); change this to rotate everywhere.
-    signingPublicKey = {{ onepasswordRead "op://Private/GitHub - calculon/public key" "my.1password.com" | quote }}
+    # Empty when bootstrapped without 1Password; re-run bootstrap to fill it in.
+    signingPublicKey = {{ $signingKey | quote }}
 
 # --- Work git identities -----------------------------------------------------
 # These stay ONLY in this local file — the public `dots` repo never sees them.

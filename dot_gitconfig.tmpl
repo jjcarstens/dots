@@ -1,7 +1,9 @@
 [user]
 	email = {{ .email }}
 	name = {{ .name }}
+{{- if .signingPublicKey }}
 	signingkey = {{ .signingPublicKey }}
+{{- end }}
 [alias]
 	pp = pull --rebase --prune
 	bbd = for-each-ref --sort=-committerdate refs/heads/ --format='%(committerdate:short) %(refname:short)'
@@ -26,6 +28,7 @@
 	clean = git-lfs clean -- %f
 	smudge = git-lfs smudge -- %f
 	process = git-lfs filter-process
+{{- if .signingPublicKey }}
 [gpg]
 	format = ssh
 [commit]
@@ -36,6 +39,7 @@
 	program = "/Applications/1Password.app/Contents/MacOS/op-ssh-sign"
 {{- else }}
 	program = "/opt/1Password/op-ssh-sign"
+{{- end }}
 {{- end }}
 {{- /* Work identities: auto-switch by matching a repo's remote URL to an org.
        Generated from local `work` data (~/.config/chezmoi/chezmoi.toml) so
