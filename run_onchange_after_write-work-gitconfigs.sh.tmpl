@@ -4,7 +4,7 @@
 # never appear in the public repo. Re-runs automatically when this content changes.
 set -eu
 
-{{ range (.work | default list) -}}
+{{ range (dig "work" (list) .) -}}
 cat > "{{ $.chezmoi.homeDir }}/.gitconfig-{{ .org }}" <<'EOF'
 [user]
 	email = {{ .email }}
@@ -13,6 +13,6 @@ EOF
 chmod 600 "{{ $.chezmoi.homeDir }}/.gitconfig-{{ .org }}"
 {{ end -}}
 
-{{ if not (.work | default list) -}}
+{{ if not (dig "work" (list) .) -}}
 : # no work identities configured
 {{ end -}}

@@ -40,7 +40,7 @@
 {{- /* Work identities: auto-switch by matching a repo's remote URL to an org.
        Generated from local `work` data (~/.config/chezmoi/chezmoi.toml) so
        employer/client names never land in the public repo. */}}
-{{- range (.work | default list) }}
+{{- range (dig "work" (list) .) }}
 
 # {{ .org }}
 [includeIf "hasconfig:remote.*.url:https://github.com/{{ .org }}/**"]
