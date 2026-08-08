@@ -1,0 +1,18 @@
+#!/usr/bin/env sh
+# Writes a ~/.gitconfig-<org> identity file for each work entry in local chezmoi
+# data (~/.config/chezmoi/chezmoi.toml). Org names live only locally, so they
+# never appear in the public repo. Re-runs automatically when this content changes.
+set -eu
+
+{{ range (.work | default list) -}}
+cat > "{{ $.chezmoi.homeDir }}/.gitconfig-{{ .org }}" <<'EOF'
+[user]
+	email = {{ .email }}
+	name = {{ .name }}
+EOF
+chmod 600 "{{ $.chezmoi.homeDir }}/.gitconfig-{{ .org }}"
+{{ end -}}
+
+{{ if not (.work | default list) -}}
+: # no work identities configured
+{{ end -}}

@@ -1,0 +1,22 @@
+export ECTO_EDITOR="code -g __FILE__:__LINE__"
+export ELIXIR_EDITOR="code -g __FILE__:__LINE__"
+
+export ERL_AFLAGS="-kernel shell_history enabled"
+export KERL_BUILD_DOCS=yes
+# export KERL_CONFIGURE_OPTIONS="--disable-debug --without-javac --with-wx=$(brew --prefix wxwidgets)"
+export KERL_CONFIGURE_OPTIONS="--disable-debug --without-javac"
+export KERL_DOC_TARGETS=chunks
+export KERL_INSTALL_HTMLDOCS=no
+export KERL_INSTALL_MANPAGES=no
+
+export PATH="$PATH:$HOME/.local/bin"
+
+# 1Password SSH agent — only when its socket is present (macOS / Linux desktop).
+[ -S "$HOME/.1password/agent.sock" ] && export SSH_AUTH_SOCK="$HOME/.1password/agent.sock"
+
+{{ if eq .chezmoi.os "darwin" -}}
+# Only let Homebrew refresh its formula/cask database at most once a month,
+# instead of on nearly every invocation (this refresh is metadata only — it
+# never upgrades installed apps; run `brew upgrade` for that).
+export HOMEBREW_AUTO_UPDATE_SECS=2592000
+{{ end -}}

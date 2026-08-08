@@ -1,0 +1,8 @@
+.elixir_ls
+tmp/
+publish.sh
+.DS_Store
+.vscode
+.lexical
+.expert
+.claude

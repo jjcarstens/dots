@@ -1,0 +1,31 @@
+{{- $name := promptStringOnce . "name" "Full name for git" -}}
+{{- $email := promptStringOnce . "email" "Personal git email (used for OSS / default)" -}}
+
+[data]
+    name = {{ $name | quote }}
+    email = {{ $email | quote }}
+    # SSH signing PUBLIC key — the ONE place defining which key is used.
+    # Pulled from 1Password (personal account); change this to rotate everywhere.
+    signingPublicKey = {{ onepasswordRead "op://Private/GitHub - calculon/public key" "my.1password.com" | quote }}
+
+# --- Work git identities -----------------------------------------------------
+# These stay ONLY in this local file — the public `dots` repo never sees them.
+# `~/.gitconfig` will auto-switch identity for repos whose remote URL matches an
+# org below (via git's includeIf/hasconfig). Add an entry per employer/client
+# and run `chezmoi apply`:
+#
+#   [[data.work]]
+#   name  = "Jon Carstens"
+#   email = "jon@acme.com"
+#   org   = "acme"              # GitHub org/owner slug; matches its repo URLs
+#
+# (Preserve existing entries across `chezmoi init` — they live in
+#  ~/.config/chezmoi/chezmoi.toml once written.)
+{{- if hasKey . "work" }}
+
+{{ range .work }}[[data.work]]
+    name  = {{ .name | quote }}
+    email = {{ .email | quote }}
+    org   = {{ .org | quote }}
+{{ end -}}
+{{- end }}

@@ -1,0 +1,6 @@
+{{ if eq .chezmoi.os "darwin" -}}
+# Homebrew (Apple Silicon or Intel prefix, whichever exists)
+for p in /opt/homebrew/bin/brew /usr/local/bin/brew; do
+  [ -x "$p" ] && eval "$("$p" shellenv)" && break
+done
+{{ end -}}

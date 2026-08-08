@@ -1,0 +1,18 @@
+# ~/.ssh/config (public base). Generic options only.
+# Internal hosts (real IPs / domains / codenames) live in the private repo at
+# ~/.dots-private/ssh/config.local and are pulled in below. If that repo isn't
+# cloned, ssh silently ignores the missing Include.
+Include ~/.dots-private/ssh/config.local
+
+AddKeysToAgent yes
+UseKeychain yes
+ForwardAgent yes
+LogLevel ERROR
+IdentityAgent "~/.1password/agent.sock"
+
+Host localhost *.local
+  StrictHostKeyChecking no
+  UserKnownHostsFile /dev/null
+
+Host github.com
+  StrictHostKeyChecking yes

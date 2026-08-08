@@ -1,0 +1,228 @@
+zmodload zsh/zprof
+PROMPT='> %B%F{blue}%1~%f%b %(?.%F{green}√.%F{red}?%?)%f %# '
+
+autoload -Uz vcs_info
+precmd_vcs_info() { vcs_info }
+precmd_functions+=( precmd_vcs_info )
+setopt prompt_subst
+zstyle ':vcs_info:git:*' check-for-staged-changes true
+zstyle ':vcs_info:git:*' stagedstr '%F{214}+ '
+zstyle ':vcs_info:git:*' unstagedstr '%F{red}± '
+zstyle ':vcs_info:git:*' formats '%u%c%F{169}%b%f'
+zstyle ':vcs_info:git:*' actionformats '%b|%a'
+zstyle ':vcs_info:*' enable git
+RPROMPT=\$vcs_info_msg_0_
+
+# Must go before compctl
+repos() {
+  cd ~/repos
+  builtin cd "$1"
+}
+
+compctl -W ~/repos -/ repos
+
+fpath=($HOME/.zsh/completions $HOME/.nrfutil/share/nrfutil-completion/scripts/zsh $fpath)
+
+# initialise completions with ZSH's compinit
+autoload -Uz compinit && compinit
+
+eval "$(~/.local/bin/mise activate zsh)"
+
+nervessyspr() {
+  targets=(rpi rpi0 rpi2 rpi3 rpi3a rpi4 rpi5 osd32mp1 bbb vultr x86_64 grisp2 mangopi_mq_pro srhub qemu_aarch64)
+  branch=$1
+
+  if [[ -z "$branch" ]]; then
+    branch=br-bump
+  fi
+
+  echo "Checking system updates on $branch"
+
+  for t in ${targets[@]}; do
+    case $t in
+      srhub)
+        repo=smartrent/nerves_system_$t
+      ;;
+      *)
+        repo=nerves-project/nerves_system_$t
+      ;;
+    esac
+    pr=`gh pr list -R $repo | grep -E "$branch" | awk '{print $1}'`
+    if [[ ! -z "$pr" ]]; then
+      echo -e "\n\033[33m----- Checks -----\033[0m\n"
+      gh pr checks -R $repo $pr
+      echo -e "\n\033[33m----- Diff -----\033[0m\n"
+      gh pr diff -R $repo $pr
+      echo -e "\n\033[33m----- Review -----\033[0m\n"
+      gh pr review -R $repo $pr --body ""
+    fi
+  done
+}
+
+hacktoberfest() {
+  case $1 in
+    start)
+      action=add
+      ;;
+    end)
+      action=remove
+      ;;
+    *)
+      echo "Must specify start or end"
+      return 1
+      ;;
+  esac
+
+  orgs=(nerves-project nerves-time nerves-networking nerves-hub)
+
+  for org in ${orgs[@]}; do
+    req=$(gh repo list $org --json name --jq '.[].name')
+    echo ${req//\"/""} | while read project; do
+      gh repo edit "$org/$project" --$action-topic hacktoberfest
+    done
+  done
+}
+
+nervesdependabot() {
+  req=`gh api --paginate -X GET search/issues -f q='org:nerves-project org:nerves-time org:nerves-networking is:open is:pull-request label:dependencies' | jq -c '.items[] | .pull_request.html_url'`
+
+  fails=()
+
+  echo ${req//\"/""} | while read pr; do
+    c=$(gh pr checks $pr)
+
+    if [ $? -eq 0 ]; then
+      echo "$pr"
+      gh pr merge $pr --rebase --delete-branch
+    else
+      fails+=($pr)
+    fi
+  done
+
+  for pr in ${fails[@]}; do
+    echo "\n\033[0;33m$pr\033[0m"
+    gh pr checks $pr
+  done
+}
+
+cleanrndis() {
+  for n in $(networksetup -listallnetworkservices | grep -e "RNDIS/Ethernet Gadget" | grep -oe "\d.*"); do
+    networksetup -deletepppoeservice "RNDIS/Ethernet Gadget $n"
+  done
+}
+
+bump-ver() {
+  if [[ ! -f "VERSION" ]]; then
+    echo "ERROR: VERSION file does not exist."
+    echo "A VERSION file is required in the root folder of the current repository for this script to function properly. (Where the .git folder is located)"
+    return 1
+  fi
+  version=$(<VERSION)
+  IFS='.' read -r major minor patch <<< "${version}"
+  IFS='.' read -r ver <<< "${version}"
+
+  if [[ -z "$step" ]]; then
+    step=1
+  fi
+
+  for opt in "$@"; do
+    case "$opt" in
+      step*)
+        step=${opt##*:}
+      ;;
+      *)
+      ;;
+    esac
+  done
+
+  for opt in "$@"; do
+    case "$opt" in
+      major)
+      ((major+=step))
+      minor=0
+      patch=0
+      break
+      ;;
+      minor)
+      ((minor+=step))
+      patch=0
+      break
+      ;;
+      patch | hotfix)
+      ((patch+=step))
+      break
+      ;;
+      *)
+      ;;
+    esac
+  done
+  next_version="${major}.${minor}.${patch}"
+  if [[ "$version" == "$next_version" ]]; then
+    echo "Version did not change!"
+    echo "Must supply major, minor, or patch option"
+    return 1
+  fi
+  echo "$next_version" > VERSION
+}
+
+logsincelast() {
+  if [[ -z "$1" ]]; then
+    echo "must supply a repo under ~/repos"
+    return 1
+  fi
+  repo=~/repos/$1
+  if [[ ! -d "$repo" ]]; then
+    echo "repo does not exist"
+    return 1
+  fi
+
+  if [[ -z "$2" ]]; then
+    if [[ -f "$repo/VERSION" ]]; then
+      ver=v$(cat "$repo/VERSION")
+    else
+      echo "must supply current version"
+      return 1
+    fi
+  else
+    ver=$2
+  fi
+
+  if [[ -z "$3" ]]; then
+    base=main
+  else
+    base=$3
+  fi
+
+  # Print one line and exclude dependabot PR noise
+  git -C $repo log --oneline --invert-grep --grep="Bump .* from .* to .* in" $ver...$base
+}
+
+# --- dots: sync/pull the public dotfiles AND the private overlay together -----
+dots() {
+  emulate -L zsh
+  local msg="${2:-dots sync}"
+  case "$1" in
+    sync)
+      echo "→ public dotfiles"
+      chezmoi re-add
+      chezmoi git -- add -A
+      chezmoi git -- commit -m "$msg" 2>/dev/null
+      chezmoi git -- push
+      echo "→ private overlays"
+      git -C ~/.dots-private add -A
+      git -C ~/.dots-private commit -m "$msg" 2>/dev/null
+      git -C ~/.dots-private push
+      ;;
+    update)
+      chezmoi update
+      git -C ~/.dots-private pull --ff-only
+      ;;
+    *)
+      echo "usage: dots [sync|update]  (public dotfiles + private overlays)"
+      ;;
+  esac
+}
+
+# Machine/employer-specific overlay from the private repo (github.com/jjcarstens/dots-private).
+# Cloned to ~/.dots-private; absent on a fresh/public-only machine, so guard it.
+[ -f ~/.dots-private/zshrc.local ] && source ~/.dots-private/zshrc.local

@@ -1,0 +1,5 @@
+# Repo files that must NOT be deployed into $HOME (they live in the repo only).
+README.md
+LICENSE
+install/**
+.github/**

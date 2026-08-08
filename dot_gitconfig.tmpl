@@ -1,0 +1,50 @@
+[user]
+	email = {{ .email }}
+	name = {{ .name }}
+	signingkey = {{ .signingPublicKey }}
+[alias]
+	pp = pull --rebase --prune
+	bbd = for-each-ref --sort=-committerdate refs/heads/ --format='%(committerdate:short) %(refname:short)'
+[core]
+	editor = vim
+	excludesfile = {{ .chezmoi.homeDir }}/.git_excludes
+	attributesfile = {{ .chezmoi.homeDir }}/.gitattributes
+[pull]
+	ff = only
+[init]
+	defaultBranch = main
+[credential "https://github.com"]
+	helper = 
+	helper = !gh auth git-credential
+[credential "https://gist.github.com"]
+	helper = 
+	helper = !gh auth git-credential
+[rebase]
+	autosquash = true
+[filter "lfs"]
+	required = true
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+[gpg]
+	format = ssh
+[commit]
+	gpgsign = true
+[gpg "ssh"]
+	allowedSignersFile = {{ .chezmoi.homeDir }}/.ssh/allowed_signers
+{{- if eq .chezmoi.os "darwin" }}
+	program = "/Applications/1Password.app/Contents/MacOS/op-ssh-sign"
+{{- else }}
+	program = "/opt/1Password/op-ssh-sign"
+{{- end }}
+{{- /* Work identities: auto-switch by matching a repo's remote URL to an org.
+       Generated from local `work` data (~/.config/chezmoi/chezmoi.toml) so
+       employer/client names never land in the public repo. */}}
+{{- range (.work | default list) }}
+
+# {{ .org }}
+[includeIf "hasconfig:remote.*.url:https://github.com/{{ .org }}/**"]
+	path = {{ $.chezmoi.homeDir }}/.gitconfig-{{ .org }}
+[includeIf "hasconfig:remote.*.url:git@github.com:{{ .org }}/**"]
+	path = {{ $.chezmoi.homeDir }}/.gitconfig-{{ .org }}
+{{- end }}
