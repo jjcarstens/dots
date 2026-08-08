@@ -1,3 +1,3 @@
 {{- $emails := list .email -}}
-{{- range (.work | default list) }}{{ $emails = append $emails .email }}{{ end -}}
+{{- range (dig "work" (list) .) }}{{ $emails = append $emails .email }}{{ end -}}
 {{ join "," $emails }} namespaces="git" {{ .signingPublicKey }}
