@@ -15,8 +15,7 @@ export PATH="$PATH:$HOME/.local/bin"
 [ -S "$HOME/.1password/agent.sock" ] && export SSH_AUTH_SOCK="$HOME/.1password/agent.sock"
 
 {{ if eq .chezmoi.os "darwin" -}}
-# Only let Homebrew refresh its formula/cask database at most once a month,
-# instead of on nearly every invocation (this refresh is metadata only — it
-# never upgrades installed apps; run `brew upgrade` for that).
+# Refresh Homebrew's metadata at most monthly instead of on nearly every call
+# (metadata only — never upgrades apps; use `brew upgrade` for that).
 export HOMEBREW_AUTO_UPDATE_SECS=2592000
 {{ end -}}

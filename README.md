@@ -39,9 +39,8 @@ The bootstrap (native `sh`, no dependencies):
 5. **Interactive review** — asks yes/no for each *optional* app (App Store `mas.txt`, manual
    apps); defaults to skip so restricted/company machines decline cleanly.
 
-> **VS Code** config is *not* managed here — it's handled by VS Code's built-in Settings
-> Sync. On a fresh machine, open VS Code, sign in, and enable Settings Sync to pull your
-> settings, keybindings, and extensions.
+> **VS Code** config is *not* managed here — VS Code's built-in Settings Sync owns it.
+> On a fresh machine: open VS Code, sign in, enable Settings Sync.
 
 ## Daily sync workflow
 
@@ -70,7 +69,7 @@ secrets and app licenses are pulled from 1Password at apply-time.
 
 ## Extending this setup
 
-As the setup grows, each kind of change has one obvious home:
+Each kind of change has one home:
 
 | I want to add…                          | Put it here                                                        |
 | --------------------------------------- | ----------------------------------------------------------------- |

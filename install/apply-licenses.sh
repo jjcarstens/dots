@@ -46,5 +46,5 @@ if [ -n "$rocket_key" ]; then
 fi
 
 # --- Dash: account-based online activation (no key) --------------------------
-echo "Dash: open the app, then click 'Activate Dash on this machine' from your"
+echo "Dash: open the app, then click 'Activate Dash on this machine' from my"
 echo "      Kapeli account (https://kapeli.com/account) — no key needed."

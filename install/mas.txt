@@ -1,9 +1,7 @@
-# Mac App Store apps (installed via `mas`) — OPT-IN.
+# Mac App Store apps (via `mas`) — OPT-IN, never installed by default (my work
+# machine restricts Apple sign-in). Bootstrap prompts per line, default skip.
+# Manual: mas install <id>
 #
-# App Store apps are NOT installed by default: company machines often restrict
-# Apple-account sign-in / allowed apps. The bootstrap prompts yes/no per line
-# (default: skip). Install manually with:  mas install <id>
-#
-# Format: <id>  # <name>
-1276493162  # reMarkable desktop   (base app; App Store only)
+# <id>  # <name>
+1276493162  # reMarkable desktop   (App Store only)
 1451685025  # WireGuard            (App Store only; no official cask)

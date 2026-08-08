@@ -57,8 +57,8 @@ log "Applying dotfiles with chezmoi ($REPO)"
 "$MISE" exec -- chezmoi init --apply "$REPO"
 
 # --- Private overlays (optional): work shell funcs + internal SSH hosts -------
-# The public .zshrc / .ssh/config reference ~/.dots-private directly; if you don't
-# have access this is skipped and the public config still works.
+# The public .zshrc / .ssh/config reference ~/.dots-private directly; without
+# access this is skipped and the public config still works.
 if [ ! -d "$HOME/.dots-private" ]; then
   log "Cloning private overlays (~/.dots-private)"
   git clone git@github.com:jjcarstens/dots-private.git "$HOME/.dots-private" 2>/dev/null \
