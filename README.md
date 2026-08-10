@@ -3,6 +3,9 @@
 My machine setup, managed with [chezmoi](https://chezmoi.io). Replicates my macOS
 (primary) and Linux (minimal) environment on a fresh machine and keeps them in sync.
 
+> **Where do I change things?** One place to look: [Extending this setup](#extending-this-setup)
+> — a row per kind of change telling me which file to edit. After any change: `dots sync`.
+
 ## What's here
 
 | Path                     | What it is                                                        |
@@ -80,6 +83,7 @@ Each kind of change has one home:
 | A new dotfile                           | `chezmoi add ~/.thing` (becomes `dot_thing`)                      |
 | A machine-specific value in a dotfile   | make it a `.tmpl`, read from `.chezmoi` data                      |
 | A secret or paid-app license            | store in 1Password, reference via `onepasswordRead` / a template  |
+| A paid app that needs license activation | add its activation to `install/apply-licenses.sh`                |
 | A work/client git identity              | add a `[[data.work]]` block to `~/.config/chezmoi/chezmoi.toml`   |
 | A macOS system tweak                    | `run_onchange_darwin-macos-defaults.sh.tmpl`                      |
 | A zsh completion for a CLI              | add its name to `install/completions.txt` (or just drop `_<exe>` in `~/.zsh/completions` — it's auto-tracked on next apply) |
