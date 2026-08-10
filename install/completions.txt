@@ -1,0 +1,4 @@
+chezmoi
+docker
+mise
+op

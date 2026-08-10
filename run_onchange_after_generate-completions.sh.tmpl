@@ -1,21 +1,52 @@
 #!/usr/bin/env sh
-# Regenerate zsh completions into ~/.zsh/completions (already on $fpath in .zshrc).
-# Mirrors my manual habit: `<exe> completion zsh > ~/.zsh/completions/_<exe>`.
-# Only regenerates for CLIs that are installed. The version comments below make
-# this re-run whenever a tool is installed or upgraded.
+# Keep ~/.zsh/completions (on $fpath in .zshrc) in sync with my completion-capable
+# CLIs. Mirrors my manual habit: `<exe> completion zsh > ~/.zsh/completions/_<exe>`.
+#
+# Source of truth = install/completions.txt (just NAMES, version-controlled). The
+# generated files themselves are NOT committed (they track binary versions and
+# would churn). This script:
+#   1. regenerates a completion for each listed CLI that's installed (so they stay
+#      fresh across upgrades),
+#   2. reconciles: any _<exe> I dropped in by hand that isn't listed gets its name
+#      appended to install/completions.txt, so `dots sync` captures it and other
+#      machines reproduce it.
+#
+# Only listed CLIs are ever invoked — nothing probes arbitrary tools (some, like
+# epmd/erl, have side effects), so the list stays explicit on purpose.
+#
+# The manifest heredoc makes this re-run when the list or a tool's version changes.
 set -eu
 
 DIR="$HOME/.zsh/completions"
+SRC_LIST="{{ .chezmoi.sourceDir }}/install/completions.txt"
 mkdir -p "$DIR"
 
-gen() {  # gen <exe>
-  command -v "$1" >/dev/null 2>&1 || return 0
-  "$1" completion zsh > "$DIR/_$1" 2>/dev/null || echo "  completion gen failed: $1"
-}
+# Allowlist from the tracked names file.
+LIST="$(sed 's/#.*//' "$SRC_LIST" | tr -s ' \t' '\n' | grep -v '^$' | sort -u)"
 
-{{ range $exe := list "chezmoi" "docker" "mise" "op" -}}
-{{- if lookPath $exe }}
-# {{ $exe }} {{ output $exe "--version" | splitList "\n" | first | trim }}
-{{- end }}
-gen {{ $exe }}
-{{ end -}}
+# 1. (Re)generate completions for listed, installed CLIs.
+echo "$LIST" | while read -r exe; do
+  [ -n "$exe" ] || continue
+  command -v "$exe" >/dev/null 2>&1 || continue
+  out="$("$exe" completion zsh </dev/null 2>/dev/null)" || continue
+  case "$out" in
+    *compdef*) printf '%s\n' "$out" > "$DIR/_$exe" ;;
+  esac
+done
+
+# 2. Reconcile: capture any hand-added _<exe> not yet tracked.
+for f in "$DIR"/_*; do
+  [ -e "$f" ] || continue
+  exe="$(basename "$f" | sed 's/^_//')"
+  if ! printf '%s\n' "$LIST" | grep -qx "$exe"; then
+    echo "$exe" >> "$SRC_LIST"
+    echo "  tracked new completion '$exe' -> install/completions.txt (commit with 'dots sync')"
+  fi
+done
+
+: <<MANIFEST
+{{ include "install/completions.txt" }}
+{{ output "mise" "ls" "--installed" }}
+{{- range (include "install/completions.txt" | splitList "\n") }}{{ if and (trim .) (lookPath (trim .)) }}
+{{ trim . }} {{ output (trim .) "--version" | splitList "\n" | first | trim }}{{ end }}{{ end }}
+MANIFEST
