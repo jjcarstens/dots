@@ -1,0 +1,21 @@
+#!/usr/bin/env sh
+# Regenerate zsh completions into ~/.zsh/completions (already on $fpath in .zshrc).
+# Mirrors my manual habit: `<exe> completion zsh > ~/.zsh/completions/_<exe>`.
+# Only regenerates for CLIs that are installed. The version comments below make
+# this re-run whenever a tool is installed or upgraded.
+set -eu
+
+DIR="$HOME/.zsh/completions"
+mkdir -p "$DIR"
+
+gen() {  # gen <exe>
+  command -v "$1" >/dev/null 2>&1 || return 0
+  "$1" completion zsh > "$DIR/_$1" 2>/dev/null || echo "  completion gen failed: $1"
+}
+
+{{ range $exe := list "chezmoi" "docker" "mise" "op" -}}
+{{- if lookPath $exe }}
+# {{ $exe }} {{ output $exe "--version" | splitList "\n" | first | trim }}
+{{- end }}
+gen {{ $exe }}
+{{ end -}}

@@ -82,6 +82,7 @@ Each kind of change has one home:
 | A secret or paid-app license            | store in 1Password, reference via `onepasswordRead` / a template  |
 | A work/client git identity              | add a `[[data.work]]` block to `~/.config/chezmoi/chezmoi.toml`   |
 | A macOS system tweak                    | `run_onchange_darwin-macos-defaults.sh.tmpl`                      |
+| A zsh completion for a CLI              | add the exe to the list in `run_onchange_after_generate-completions.sh.tmpl` |
 | A **sensitive** shell func / SSH host   | the private `~/.dots-private` repo (`zshrc.local` / `ssh/config.local`) |
 | Something Linux- or macOS-only          | guard it with `{{ if eq .chezmoi.os "…" }}` in a `.tmpl`          |
 
