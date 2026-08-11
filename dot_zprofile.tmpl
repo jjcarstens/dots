@@ -1,6 +1,13 @@
 {{ if eq .chezmoi.os "darwin" -}}
-# Homebrew (Apple Silicon or Intel prefix, whichever exists)
-for p in /opt/homebrew/bin/brew /usr/local/bin/brew; do
-  [ -x "$p" ] && eval "$("$p" shellenv)" && break
-done
+# Homebrew prefix. mise pours formulae + casks into /opt/homebrew but does not
+# install the `brew` binary, so use `brew shellenv` when brew exists and fall
+# back to putting the prefix bin/sbin on PATH directly.
+BREW_PREFIX="/opt/homebrew"
+[ -d "$BREW_PREFIX" ] || BREW_PREFIX="/usr/local"
+if [ -x "$BREW_PREFIX/bin/brew" ]; then
+  eval "$("$BREW_PREFIX/bin/brew" shellenv)"
+elif [ -d "$BREW_PREFIX/bin" ]; then
+  export HOMEBREW_PREFIX="$BREW_PREFIX"
+  export PATH="$BREW_PREFIX/bin:$BREW_PREFIX/sbin:$PATH"
+fi
 {{ end -}}

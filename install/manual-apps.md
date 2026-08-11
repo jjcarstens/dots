@@ -8,6 +8,7 @@ so this is a one-time step per machine.
 | App      | Where               | Notes                                            |
 | -------- | ------------------- | ------------------------------------------------ |
 | Tidewave | https://tidewave.ai | No stable direct-download URL; get the macOS app from the site. |
+| Logi Options+ | https://logitech.com/options-plus | Cask is a pkg installer mise can't pour; grab the installer from Logitech. |
 
 > reMarkable is a Mac App Store app — see `mas.txt` (id 1276493162).
 

@@ -8,10 +8,10 @@
 #   1. install mise (native curl)
 #   2. mise installs chezmoi + 1Password CLI  (needed before apply: templates pull
 #      the git signing key / licenses from 1Password)
-#   3. chezmoi init --apply  -> dotfiles, app config, mise config, macOS defaults
-#   4. mise install          -> runtimes + CLIs from the now-managed mise config
-#   5. macOS only: Homebrew (last resort) for GUI casks in install/Brewfile
-#   6. interactive review    -> optional App Store / manual apps (default: skip)
+#   3. chezmoi init --apply  -> dotfiles, app config, mise config
+#   4. mise bootstrap        -> brew formulae + casks (no Homebrew needed), macOS
+#      defaults, then runtimes + CLIs from the managed mise config
+#   5. macOS only: paid-app licenses + interactive App Store / manual apps
 set -eu
 
 REPO="jjcarstens/dots"
@@ -78,34 +78,29 @@ if [ ! -d "$HOME/.dots-private" ]; then
     || echo "  private overlays skipped (no access) — public config still works."
 fi
 
-# --- 4. mise install (managed config) ----------------------------------------
-log "Installing runtimes + CLIs from mise config"
-"$MISE" install
-
-# --- 5. Homebrew (macOS only, last resort for GUI casks) ---------------------
+# --- 4. mise bootstrap (managed config) --------------------------------------
+# On macOS: installs brew formulae + casks (mise pours them directly, no Homebrew
+# install), writes macOS defaults, then installs runtimes + CLIs from [tools].
+# On Linux: brew/cask entries are macOS-guarded, so just install the tools.
+SRC="$("$MISE" exec -- chezmoi source-path)"   # chezmoi source dir (holds install/)
 if [ "$OS" = "Darwin" ]; then
-  if ! have brew; then
-    log "Installing Homebrew (for GUI casks)"
-    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-    for p in /opt/homebrew/bin/brew /usr/local/bin/brew; do
-      [ -x "$p" ] && eval "$("$p" shellenv)" && break
-    done
-  fi
+  log "Installing packages + macOS defaults + tools (mise bootstrap)"
+  "$MISE" trust -q "$HOME/.config/mise/config.toml" 2>/dev/null || true
+  "$MISE" bootstrap --only packages,macos-defaults,tools --yes
+else
+  log "Installing runtimes + CLIs from mise config"
+  "$MISE" install
+fi
 
-  SRC="$("$MISE" exec -- chezmoi source-path)"   # chezmoi source dir (holds install/)
-
-  if have brew && [ -f "$SRC/install/Brewfile" ]; then
-    log "Installing base apps via Homebrew"
-    brew bundle --file "$SRC/install/Brewfile"
-  fi
-
+# --- 5. macOS: paid-app licenses + optional apps -----------------------------
+if [ "$OS" = "Darwin" ]; then
   # --- Apply paid-app licenses from 1Password (apps now installed) -----------
   if [ -f "$SRC/install/apply-licenses.sh" ]; then
     log "Applying app licenses from 1Password"
     sh "$SRC/install/apply-licenses.sh" || true
   fi
 
-  # --- 6. interactive review: optional apps (default skip) -------------------
+  # --- interactive review: optional apps (default skip) ----------------------
   MAS="$SRC/install/mas.txt"
   if [ -f "$MAS" ] && have mas; then
     log "Optional Mac App Store apps (default: skip)"
@@ -119,7 +114,7 @@ if [ "$OS" = "Darwin" ]; then
     log "Skipping App Store review ('mas' not installed). See install/mas.txt"
   fi
 
-  log "Manual apps: see install/manual-apps.md (Tidewave + optional vendor tools)"
+  log "Manual apps: see install/manual-apps.md (Tidewave, Logi Options+ + optional vendor tools)"
 fi
 
 log "Done. Open a new terminal (or 'exec zsh') to load the new shell config."

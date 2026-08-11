@@ -6,3 +6,78 @@ erlang = "latest"
 fwup = "latest"
 gh = "latest"
 usage = "latest"
+
+# --- Bootstrap: system packages (no Homebrew install needed) ------------------
+# mise pours brew formulae + casks into /opt/homebrew directly (verifies sha256,
+# relocates, code-signs) — no `brew` binary required. Applied by `mise bootstrap`.
+# Everything here is macOS-only so Linux stays minimal (drop the os guard on a
+# formula if I ever want it under linuxbrew).
+#
+# Add a formula:  mise bootstrap packages use brew:<name>
+# Add a cask   :  mise bootstrap packages use brew-cask:<name>
+[bootstrap.brew.taps]
+"nvie/tap" = "https://github.com/nvie/homebrew-tap.git"
+
+[bootstrap.packages]
+# Build/system deps for Erlang/Nerves/fwup + CLIs without a good mise backend.
+# Prefer `mise use -g <tool>` for any NEW cli before adding it here.
+"brew:automake"     = { version = "latest", os = "macos" }  # build dep
+"brew:confuse"      = { version = "latest", os = "macos" }  # build dep (nerves)
+"brew:libarchive"   = { version = "latest", os = "macos" }  # build dep
+"brew:pkgconf"      = { version = "latest", os = "macos" }  # build dep
+"brew:squashfs"     = { version = "latest", os = "macos" }  # build dep (nerves/fwup)
+"brew:coreutils"    = { version = "latest", os = "macos" }  # GNU coreutils
+"brew:cloudflared"  = { version = "latest", os = "macos" }  # ssh ProxyCommand
+"brew:nmap"         = { version = "latest", os = "macos" }
+"brew:tio"          = { version = "latest", os = "macos" }  # serial console
+"brew:wakeonlan"    = { version = "latest", os = "macos" }
+"brew:nvie/tap/git-toolbelt" = { version = "latest", os = "macos" }
+
+# Base GUI apps (official, self-updating casks).
+"brew-cask:1password"          = { version = "latest", os = "macos" }
+"brew-cask:alfred"             = { version = "latest", os = "macos" }
+"brew-cask:dash"               = { version = "latest", os = "macos" }
+"brew-cask:dbngin"             = { version = "latest", os = "macos" }
+"brew-cask:google-chrome"      = { version = "latest", os = "macos" }
+"brew-cask:hyperkey"           = { version = "latest", os = "macos" }
+"brew-cask:rocket"             = { version = "latest", os = "macos" }
+"brew-cask:slack"              = { version = "latest", os = "macos" }
+"brew-cask:visual-studio-code" = { version = "latest", os = "macos" }
+"brew-cask:wireshark-app"      = { version = "latest", os = "macos" }
+
+# --- Bootstrap: macOS defaults (replaces the old run_onchange script) ---------
+# Applied by `mise bootstrap macos defaults apply`. Inert on Linux.
+# See a key's current value:  defaults read <domain> <key>
+[bootstrap.macos.dock]
+autohide = true
+tilesize = 67
+
+[bootstrap.macos.finder]
+show_pathbar = true
+show_status_bar = true
+preferred_view_style = "column"
+
+[bootstrap.macos.keyboard]
+key_repeat = 2            # faster key repeat (takes effect after logout)
+initial_key_repeat = 15
+
+[bootstrap.macos.trackpad]
+tap_to_click = true
+
+[bootstrap.macos.defaults]
+# Don't drop .DS_Store on network / USB volumes.
+"com.apple.desktopservices" = { DSDontWriteNetworkStores = true, DSDontWriteUSBStores = true }
+# Mouse: tracking speed 1, natural scrolling on, right-side secondary click.
+# (Some mouse prefs may not apply until logout; verify in System Settings > Mouse.)
+NSGlobalDomain = { "com.apple.mouse.scaling" = 1.0, "com.apple.swipescrolldirection" = true }
+"com.apple.AppleMultitouchMouse" = { MouseButtonMode = "TwoButton" }
+"com.apple.driver.AppleBluetoothMultitouch.mouse" = { MouseButtonMode = "TwoButton" }
+
+# Screenshot location needs $HOME + an existing dir, so it runs as a hook after
+# the declarative defaults, which also restarts the affected apps.
+[bootstrap.hooks.post-defaults]
+run = [
+  'mkdir -p "$HOME/Movies/screen_recordings"',
+  'defaults write com.apple.screencapture location -string "$HOME/Movies/screen_recordings"',
+  'killall Finder Dock >/dev/null 2>&1 || true',
+]

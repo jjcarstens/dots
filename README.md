@@ -14,17 +14,18 @@ My machine setup, managed with [chezmoi](https://chezmoi.io). Replicates my macO
 | `.chezmoi.toml.tmpl`     | Prompts on `init` for machine info (name, email, personal/work).  |
 | `.chezmoiignore`         | Files chezmoi should not manage per-OS.                           |
 | `install/`               | Install manifest + native bootstrap (see below).                  |
-| `run_onchange_*`         | Curated macOS `defaults` tweaks (run automatically on change).     |
+| `private_dot_config/mise/config.toml` | Tools + `[bootstrap.*]`: brew formulae/casks, macOS defaults. |
 
 ## Install source priority
 
-Homebrew is a **last resort** (it gets heavy). Prefer, in order:
+Homebrew formulae/casks are installed **by mise** (no `brew` binary needed), so
+there's no separate Homebrew step. Prefer, in order:
 
-1. **mise** — runtimes + CLIs (`private_dot_config/mise/config.toml` → `~/.config/mise/`)
-2. **direct download / vendor** — official vendor installers; the self-updating GUI
-   apps use their official Homebrew casks, the rest are in `install/manual-apps.md`
+1. **mise** — runtimes + CLIs via `[tools]`, and GUI apps + build deps via
+   `[bootstrap.packages]` (`private_dot_config/mise/config.toml` → `~/.config/mise/`)
+2. **direct download / vendor** — official vendor installers for apps with no
+   mise-installable cask (`install/manual-apps.md`)
 3. **Mac App Store** — `mas`, interactive/opt-in (`install/mas.txt`)
-4. **Homebrew** — GUI casks + build deps nothing above handles (`install/Brewfile`, kept small)
 
 ## Fresh machine (one command)
 
@@ -35,10 +36,12 @@ sh -c "$(curl -fsLS https://raw.githubusercontent.com/jjcarstens/dots/main/insta
 The bootstrap (native `sh`, no dependencies):
 
 1. Installs **mise** natively (`curl`), then `mise` installs **chezmoi** + **1Password CLI**.
-2. `chezmoi init --apply jjcarstens/dots` — writes dotfiles, app config, mise config, and
-   applies the macOS `defaults` tweaks; injects licenses/secrets from 1Password.
-3. `mise install` — runtimes + CLIs from the managed mise config.
-4. macOS: **Homebrew** (last resort) installs the GUI casks + build deps in `install/Brewfile`.
+2. `chezmoi init --apply jjcarstens/dots` — writes dotfiles, app config, and mise config;
+   injects licenses/secrets from 1Password.
+3. macOS: `mise bootstrap` installs brew formulae + casks (mise pours them directly, no
+   Homebrew install), writes the macOS `defaults`, then installs runtimes + CLIs from `[tools]`.
+   Linux: brew/cask entries are macOS-guarded, so it just installs the tools.
+4. macOS: **paid-app licenses** from 1Password (`apply-licenses.sh`).
 5. **Interactive review** — asks yes/no for each *optional* app (App Store `mas.txt`, manual
    apps); defaults to skip so restricted/company machines decline cleanly.
 
@@ -76,16 +79,16 @@ Each kind of change has one home:
 
 | I want to add…                          | Put it here                                                        |
 | --------------------------------------- | ----------------------------------------------------------------- |
-| A CLI / language runtime                | `private_dot_config/mise/config.toml` (mise-first)                |
-| A GUI app with an official cask         | `install/Brewfile`                                                |
+| A CLI / language runtime                | `private_dot_config/mise/config.toml` `[tools]` (mise-first)      |
+| A GUI app or build dep (brew formula/cask) | `private_dot_config/mise/config.toml` `[bootstrap.packages]` (or `mise bootstrap packages use brew-cask:<name>`) |
 | An App Store app (opt-in)               | `install/mas.txt`                                                 |
-| An app with no cask/download            | `install/manual-apps.md`                                          |
+| An app with no mise-installable cask    | `install/manual-apps.md`                                          |
 | A new dotfile                           | `chezmoi add ~/.thing` (becomes `dot_thing`)                      |
 | A machine-specific value in a dotfile   | make it a `.tmpl`, read from `.chezmoi` data                      |
 | A secret or paid-app license            | store in 1Password, reference via `onepasswordRead` / a template  |
 | A paid app that needs license activation | add its activation to `install/apply-licenses.sh`                |
 | A work/client git identity              | add a `[[data.work]]` block to `~/.config/chezmoi/chezmoi.toml`   |
-| A macOS system tweak                    | `run_onchange_darwin-macos-defaults.sh.tmpl`                      |
+| A macOS system tweak                    | `private_dot_config/mise/config.toml` `[bootstrap.macos.*]`       |
 | A zsh completion for a CLI              | add its name to `install/completions.txt` (or just drop `_<exe>` in `~/.zsh/completions` — it's auto-tracked on next apply) |
 | A **sensitive** shell func / SSH host   | the private `~/.dots-private` repo (`zshrc.local` / `ssh/config.local`) |
 | Something Linux- or macOS-only          | guard it with `{{ if eq .chezmoi.os "…" }}` in a `.tmpl`          |
@@ -101,12 +104,11 @@ flowchart TD
     C --> D{op signed in?}
     D -- no --> D1[Warn: secrets skipped]
     D -- yes --> E
-    D1 --> E[chezmoi init --apply: dotfiles, mise config, macOS defaults]
+    D1 --> E[chezmoi init --apply: dotfiles, app + mise config]
     E --> F[Clone private overlays → ~/.dots-private]
-    F --> G[mise install: runtimes + CLIs]
-    G --> H{macOS?}
-    H -- no, Linux --> Z[Done — minimal subset]
-    H -- yes --> I[Homebrew: base GUI casks + build deps]
+    F --> G{macOS?}
+    G -- no, Linux --> Y[mise install: runtimes + CLIs] --> Z[Done — minimal subset]
+    G -- yes --> I[mise bootstrap: brew formulae + casks, macOS defaults, tools]
     I --> J[apply-licenses.sh: Alfred auto, Rocket/Dash prompt]
     J --> K[Interactive review: App Store / manual apps, default skip]
     K --> L[Sign into VS Code → enable Settings Sync]
