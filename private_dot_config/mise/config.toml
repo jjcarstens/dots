@@ -3,9 +3,12 @@
 chezmoi = "latest"
 elixir = "latest"
 erlang = "latest"
-fwup = "latest"
+#fwup = "latest"
 gh = "latest"
 usage = "latest"
+
+[plugins]
+fwup = "https://github.com/fwup-home/asdf-fwup.git"
 
 # --- Bootstrap: system packages (no Homebrew install needed) ------------------
 # mise pours brew formulae + casks into /opt/homebrew directly (verifies sha256,
@@ -31,7 +34,7 @@ usage = "latest"
 "brew:nmap"         = { version = "latest", os = "macos" }
 "brew:tio"          = { version = "latest", os = "macos" }  # serial console
 "brew:wakeonlan"    = { version = "latest", os = "macos" }
-"brew:nvie/tap/git-toolbelt" = { version = "latest", os = "macos" }
+#"brew:nvie/tap/git-toolbelt" = { version = "latest", os = "macos" }
 
 # Base GUI apps (official, self-updating casks).
 "brew-cask:1password"          = { version = "latest", os = "macos" }
@@ -43,7 +46,6 @@ usage = "latest"
 "brew-cask:rocket"             = { version = "latest", os = "macos" }
 "brew-cask:slack"              = { version = "latest", os = "macos" }
 "brew-cask:visual-studio-code" = { version = "latest", os = "macos" }
-"brew-cask:wireshark-app"      = { version = "latest", os = "macos" }
 
 # --- Bootstrap: macOS defaults (replaces the old run_onchange script) ---------
 # Applied by `mise bootstrap macos defaults apply`. Inert on Linux.
