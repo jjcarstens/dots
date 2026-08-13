@@ -8,7 +8,7 @@ AddKeysToAgent yes
 UseKeychain yes
 ForwardAgent yes
 LogLevel ERROR
-IdentityAgent "~/.1password/agent.sock"
+IdentityAgent "~/.ssh/1password_agent.sock"
 
 Host localhost *.local
   StrictHostKeyChecking no
