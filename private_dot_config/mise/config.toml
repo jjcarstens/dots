@@ -1,5 +1,5 @@
 [tools]
-"1password-cli" = "latest"
+1password-cli = "latest"
 chezmoi = "latest"
 elixir = "latest"
 erlang = "latest"
