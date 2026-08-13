@@ -87,7 +87,8 @@ Each kind of change has one home:
 | A machine-specific value in a dotfile   | make it a `.tmpl`, read from `.chezmoi` data                      |
 | A secret or paid-app license            | store in 1Password, reference via `onepasswordRead` / a template  |
 | A paid app that needs license activation | add its activation to `install/apply-licenses.sh`                |
-| A work/client git identity              | add a `[[data.work]]` block to `~/.config/chezmoi/chezmoi.toml`   |
+| Your primary work git identity          | `chezmoi init` prompts for it; or re-run `chezmoi init` to fill it in later |
+| An *additional* work/client git identity | add another `[[data.work]]` block to `~/.config/chezmoi/chezmoi.toml`, then `chezmoi apply` |
 | A macOS system tweak                    | `private_dot_config/mise/config.toml` `[bootstrap.macos.*]`       |
 | A zsh completion for a CLI              | add its name to `install/completions.txt` (or just drop `_<exe>` in `~/.zsh/completions` — it's auto-tracked on next apply) |
 | A **sensitive** shell func / SSH host   | the private `~/.dots-private` repo (`zshrc.local` / `ssh/config.local`) |

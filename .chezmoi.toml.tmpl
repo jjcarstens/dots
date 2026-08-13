@@ -1,5 +1,11 @@
 {{- $name := promptStringOnce . "name" "Full name for git" -}}
 {{- $email := promptStringOnce . "email" "Personal git email (used for OSS / default)" -}}
+{{- /* Primary work identity. Leave any blank to skip work setup entirely.
+       Persisted as scalars below so promptStringOnce never re-asks; the
+       [[data.work]] block is generated from them further down. */ -}}
+{{- $workName := promptStringOnce . "workName" "Work full name for git (blank to skip)" -}}
+{{- $workEmail := promptStringOnce . "workEmail" "Work git email (blank to skip)" -}}
+{{- $workOrg := promptStringOnce . "workOrg" "Work GitHub org/owner slug, e.g. acme (blank to skip)" -}}
 {{- /* Skip the 1Password read when bootstrap is running without CLI integration. */ -}}
 {{- $signingKey := "" -}}
 {{- if not (env "DOTS_SKIP_SECRETS") -}}
@@ -9,6 +15,10 @@
 [data]
     name = {{ $name | quote }}
     email = {{ $email | quote }}
+    # Primary work identity (scalars persist prompt answers; see [[data.work]] below).
+    workName = {{ $workName | quote }}
+    workEmail = {{ $workEmail | quote }}
+    workOrg = {{ $workOrg | quote }}
     # SSH signing PUBLIC key — the ONE place defining which key is used.
     # Pulled from 1Password (personal account); change this to rotate everywhere.
     # Empty when bootstrapped without 1Password; re-run bootstrap to fill it in.
@@ -34,6 +44,12 @@
     email = {{ .email | quote }}
     org   = {{ .org | quote }}
 {{ end -}}
+{{- else if $workOrg }}
+
+[[data.work]]
+    name  = {{ $workName | quote }}
+    email = {{ $workEmail | quote }}
+    org   = {{ $workOrg | quote }}
 {{- end }}
 
 [git]
