@@ -1,3 +1,6 @@
+[git]
+    autoCommit = true
+    commitMessageTemplate = "{{ promptString \"Commit message\" }}"
 {{- $name := promptStringOnce . "name" "Full name for git" -}}
 {{- $email := promptStringOnce . "email" "Personal git email (used for OSS / default)" -}}
 {{- /* Skip the 1Password read when bootstrap is running without CLI integration. */ -}}
