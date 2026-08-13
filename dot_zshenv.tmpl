@@ -12,7 +12,7 @@ export KERL_INSTALL_MANPAGES=no
 export PATH="$PATH:$HOME/.local/bin"
 
 # 1Password SSH agent — only when its socket is present (macOS / Linux desktop).
-[ -S "$HOME/.1password/agent.sock" ] && export SSH_AUTH_SOCK="$HOME/.1password/agent.sock"
+[ -S "$HOME/.ssh/1password_agent.sock" ] && export SSH_AUTH_SOCK="$HOME/.ssh/1password_agent.sock"
 
 {{ if eq .chezmoi.os "darwin" -}}
 # Refresh Homebrew's metadata at most monthly instead of on nearly every call
