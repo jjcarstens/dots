@@ -9,6 +9,7 @@ so this is a one-time step per machine.
 | -------- | ------------------- | ------------------------------------------------ |
 | Tidewave | https://tidewave.ai | No stable direct-download URL; get the macOS app from the site. |
 | Logi Options+ | https://logitech.com/options-plus | Cask is a pkg installer mise can't pour; grab the installer from Logitech. |
+| Wireshark | https://www.wireshark.org/download.html | Cask's ChmodBPF step is a sudo pkg installer mise can't pour (retries every bootstrap); install from the site. |
 
 > reMarkable is a Mac App Store app — see `mas.txt` (id 1276493162).
 

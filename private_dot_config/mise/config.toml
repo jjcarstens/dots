@@ -1,14 +1,10 @@
 [tools]
-1password-cli = "latest"
+"1password-cli" = "latest"
 chezmoi = "latest"
 elixir = "latest"
 erlang = "latest"
-#fwup = "latest"
 gh = "latest"
 usage = "latest"
-
-[plugins]
-fwup = "https://github.com/fwup-home/asdf-fwup.git"
 
 # --- Bootstrap: system packages (no Homebrew install needed) ------------------
 # mise pours brew formulae + casks into /opt/homebrew directly (verifies sha256,
@@ -18,8 +14,10 @@ fwup = "https://github.com/fwup-home/asdf-fwup.git"
 #
 # Add a formula:  mise bootstrap packages use brew:<name>
 # Add a cask   :  mise bootstrap packages use brew-cask:<name>
-[bootstrap.brew.taps]
-"nvie/tap" = "https://github.com/nvie/homebrew-tap.git"
+# No third-party taps: mise's brew backend needs api/formula/*.json metadata,
+# which nvie/tap doesn't publish (see git-toolbelt below).
+#[bootstrap.brew.taps]
+#"nvie/tap" = "https://github.com/nvie/homebrew-tap.git"
 
 [bootstrap.packages]
 # Build/system deps for Erlang/Nerves/fwup + CLIs without a good mise backend.
@@ -34,6 +32,9 @@ fwup = "https://github.com/fwup-home/asdf-fwup.git"
 "brew:nmap"         = { version = "latest", os = "macos" }
 "brew:tio"          = { version = "latest", os = "macos" }  # serial console
 "brew:wakeonlan"    = { version = "latest", os = "macos" }
+"brew:fwup"         = { version = "latest", os = "macos" }  # nerves fw update tool
+# git-toolbelt: not in a mise-installable tap. Manual: clone nvie/git-toolbelt +
+# `install -m755 git-* ~/.local/bin/`.
 #"brew:nvie/tap/git-toolbelt" = { version = "latest", os = "macos" }
 
 # Base GUI apps (official, self-updating casks).

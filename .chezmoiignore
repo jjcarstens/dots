@@ -3,3 +3,6 @@ README.md
 LICENSE
 install/**
 .github/**
+{{ if ne .chezmoi.os "darwin" }}
+.ssh/1password_agent.sock
+{{ end -}}
